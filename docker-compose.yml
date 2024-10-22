@@ -19,3 +19,4 @@ services:
       - IMAP_PORT=${IMAP_PORT}
       - IMAP_USER=${IMAP_USER}
       - IMAP_PASS=${IMAP_PASS}
+      - PORT=${PORT}
