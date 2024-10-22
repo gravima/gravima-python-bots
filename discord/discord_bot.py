@@ -1,7 +1,7 @@
 import os
 import discord
 import requests
-import re
+from flask import Flask, request, jsonify
 from discord.ext import commands
 from dotenv import load_dotenv
 import logging
@@ -21,6 +21,9 @@ intents.messages = True
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+# Flask application for receiving updates
+app = Flask(__name__)
 
 # Event when the bot is ready and connected to Discord
 @bot.event
@@ -56,5 +59,34 @@ async def on_interaction(interaction):
             logging.error(f'Fehler beim Senden der Nachricht an den Webhook: {e}')
             await interaction.response.send_message('Fehler beim Senden der Nachricht an n8n.')
 
-# Starte den Bot
-bot.run(DISCORD_API_KEY)
+# Flask Route to update message status
+@app.route('/update-message-status', methods=['POST'])
+async def update_message_status():
+    data = request.json
+    message_id = data.get('messageId')
+    status = data.get('status')
+
+    channel = bot.get_channel(DISCORD_CHANNEL_ID)
+    message = await channel.fetch_message(message_id)
+
+    if status == 'read':
+        await message.edit(content=message.content + "\n✅ Nachricht wurde als gelesen markiert.")
+    elif status == 'trash':
+        await message.edit(content=message.content + "\n🗑️ Nachricht wurde in den Papierkorb verschoben.")
+
+    return jsonify({'success': True}), 200
+
+if __name__ == "__main__":
+    # Running both the Discord bot and the Flask app
+    from threading import Thread
+
+    # Start Flask in a separate thread
+    def run_flask():
+        app.run(host='0.0.0.0', port=5000)
+
+    # Start the Flask server
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
+
+    # Start the Discord bot
+    bot.run(DISCORD_API_KEY)
