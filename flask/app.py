@@ -27,15 +27,17 @@ def getemailuidbymessage_id(message_id):
     if result == 'OK':
         email_ids = data[0].split()
         if email_ids:
-            return email_ids[0].decode()
+            # Hier holen wir die UID der gefundenen Nachricht
+            result, data = mail.fetch(email_ids[0], '(UID)')
+            if result == 'OK':
+                uid = data[0].decode().split()[2]  # UID extrahieren
+                return uid
+            else:
+                return None
         else:
             return None
     else:
         return None
-
-@app.route('/')
-def index():
-    return 'Index Page'
 
 @app.route('/get-uid', methods=['POST'])
 def get_uid():
