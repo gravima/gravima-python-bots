@@ -1,6 +1,5 @@
 import imaplib
 from flask import Flask, request, jsonify
-import requests
 import os
 from dotenv import load_dotenv
 
@@ -49,29 +48,6 @@ def getemailuidbymessage_id(message_id):
     finally:
         mail.logout()
 
-import requests
-
-DISCORD_BOT_UPDATE_URL = os.getenv('DISCORD_BOT_UPDATE_URL')
-
-# Sendet eine Benachrichtigung an den Discord-Bot, um die Nachricht zu aktualisieren
-def notify_discord(message_id, status):
-    payload = {
-        'messageId': message_id,
-        'status': status
-    }
-
-    headers = {'Content-Type': 'application/json'}
-    try:
-        response = requests.post("https://pythonbot.gravima.de/update-message-status", json=payload, headers=headers)
-        if response.status_code == 200:
-            return True
-        else:
-            print(f"Fehler beim Senden der Aktualisierung an Discord: {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"Exception beim Senden der Aktualisierung an Discord: {str(e)}")
-        return False
-
 # Route zum Abrufen der UID
 @app.route('/get-uid', methods=['POST'])
 def get_uid():
@@ -107,7 +83,6 @@ def move_email():
         mail.select('INBOX')
         result = mail.uid('MOVE', uid, 'Trash')
         if result[0] == 'OK':
-            notify_discord(message_id, 'trash')
             return jsonify({'message': 'Email moved to Trash successfully', 'uid': uid}), 200
         else:
             return jsonify({'error': 'Failed to move email', 'uid': uid}), 500
@@ -136,7 +111,6 @@ def mark_as_read():
         # Das \Seen-Flag setzen, um die E-Mail als gelesen zu markieren
         result = mail.uid('STORE', uid, '+FLAGS', '(\\Seen)')
         if result[0] == 'OK':
-            notify_discord(message_id, 'read')
             return jsonify({'message': f'Email {uid} marked as read'}), 200
         else:
             return jsonify({'error': f'Failed to mark email {uid} as read'}), 500
