@@ -121,33 +121,26 @@ def move_email():
 def mark_as_read():
     data = request.get_json()
     uid = data.get('uid')
-    message_id = data.get('message_id')  # Hier wird die messageId von Discord übergeben
 
     if not uid:
-        logging.error('UID not provided')
         return jsonify({'error': 'UID not provided'}), 400
 
-    logging.info(f'Received request to mark as read for UID: {uid}, message_id: {message_id}')
-    
     mail, error = connect_to_imap()
     if error:
-        logging.error(f'IMAP connection error: {error}')
         return jsonify({'error': error}), 500
 
     try:
+        # Postfach auswählen
         mail.select('INBOX')
+
+        # Das \Seen-Flag setzen, um die E-Mail als gelesen zu markieren
         result = mail.uid('STORE', uid, '+FLAGS', '(\\Seen)')
         if result[0] == 'OK':
-            logging.info(f'Successfully marked email {uid} as read')
-
-            # Nach dem erfolgreichen Markieren als gelesen, Discord benachrichtigen
             notify_discord(message_id, 'read')
             return jsonify({'message': f'Email {uid} marked as read'}), 200
         else:
-            logging.error(f'Failed to mark email {uid} as read')
             return jsonify({'error': f'Failed to mark email {uid} as read'}), 500
     except imaplib.IMAP4.error as e:
-        logging.error(f'IMAP error while marking as read: {e}')
         return jsonify({'error': f'Error marking email as read: {str(e)}'}), 500
     finally:
         mail.logout()
