@@ -48,7 +48,7 @@ async def on_interaction(interaction):
             response = requests.post(WEBHOOK_URL, json=payload, headers=headers)
 
             if response.status_code == 200:
-                await interaction.response.send_message(f'Dein Befehl "{command}" wurde weitergeleitet.')
+                await interaction.response.send_message(f'Dein Befehl "{command}" wurde weitergeleitet!')
             else:
                 await interaction.response.send_message(f'Fehler beim Senden der Nachricht an n8n: {response.status_code} / {WEBHOOK_URL} ')
 
