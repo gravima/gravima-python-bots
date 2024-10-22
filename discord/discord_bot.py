@@ -4,6 +4,9 @@ import requests
 import re
 from discord.ext import commands
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Laden der Umgebungsvariablen aus der .env Datei
 load_dotenv()
@@ -22,7 +25,8 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 # Event when the bot is ready and connected to Discord
 @bot.event
 async def on_ready():
-    print(f'Bot is online as {bot.user}')
+    logging.info(f'Bot is online as {bot.user}')
+    logging.info(f'Messages will be send to {WEBHOOK_URL}')
 
 # Event to handle button interactions (custom buttons in Discord)
 @bot.event
@@ -48,7 +52,7 @@ async def on_interaction(interaction):
                 await interaction.response.send_message(f'Fehler beim Senden der Nachricht an n8n: {response.status_code}')
 
         except Exception as e:
-            print(f'Fehler beim Senden der Nachricht an den Webhook: {e}')
+            logging.error(f'Fehler beim Senden der Nachricht an den Webhook: {e}')
             await interaction.response.send_message('Fehler beim Senden der Nachricht an n8n.')
 
 # Starte den Bot
