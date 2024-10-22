@@ -49,7 +49,7 @@ async def on_interaction(interaction):
             if response.status_code == 200:
                 await interaction.response.send_message(f'Dein Befehl "{command}" für E-Mail-ID "{message_id}" wurde an n8n gesendet.')
             else:
-                await interaction.response.send_message(f'Fehler beim Senden der Nachricht an n8n: {response.status_code}')
+                await interaction.response.send_message(f'Fehler beim Senden der Nachricht an n8n: {response.status_code} / {WEBHOOK_URL} ')
 
         except Exception as e:
             logging.error(f'Fehler beim Senden der Nachricht an den Webhook: {e}')
