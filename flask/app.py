@@ -6,39 +6,49 @@ from dotenv import load_dotenv
 load_dotenv()
 
 IMAP_HOST = os.getenv('IMAP_HOST')
-IMAP_PORT = os.getenv('IMAP_PORT')
+IMAP_PORT = int(os.getenv('IMAP_PORT', 993))  # Standard IMAP SSL Port
 IMAP_USER = os.getenv('IMAP_USER')
 IMAP_PASS = os.getenv('IMAP_PASS')
-PORT = os.getenv('PORT')
+PORT = int(os.getenv('PORT', 5000))  # Standard Flask Port
 
 app = Flask(__name__)
 
+# Hilfsfunktion zum Aufbau der IMAP-Verbindung
+def connect_to_imap():
+    try:
+        mail = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
+        mail.login(IMAP_USER, IMAP_PASS)
+        return mail
+    except imaplib.IMAP4.error as e:
+        return None, f"IMAP connection failed: {str(e)}"
+
+# Funktion zur Suche der UID per Message-ID
 def getemailuidbymessage_id(message_id):
-    # Verbindung zum IMAP-Server herstellen
-    mail = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
-    mail.login(IMAP_USER, IMAP_PASS)
+    mail, error = connect_to_imap()
+    if error:
+        return None, error
 
-    # Postfach auswählen
-    mail.select('inbox')
+    try:
+        mail.select('inbox')
+        result, data = mail.search(None, f'HEADER Message-ID "{message_id}"')
 
-    # E-Mails nach Message-ID durchsuchen
-    result, data = mail.search(None, f'HEADER Message-ID "{message_id}"')
-
-    if result == 'OK':
-        email_ids = data[0].split()
-        if email_ids:
-            # Hier holen wir die UID der gefundenen Nachricht
-            result, data = mail.fetch(email_ids[0], '(UID)')
-            if result == 'OK':
-                uid = data[0].decode().split()[2]  # UID extrahieren
-                return uid
+        if result == 'OK':
+            email_ids = data[0].split()
+            if email_ids:
+                result, data = mail.fetch(email_ids[0], '(UID)')
+                if result == 'OK':
+                    uid = data[0].decode().split()[2].strip(')')
+                    return uid, None
+                else:
+                    return None, 'Failed to fetch UID'
             else:
-                return None
+                return None, 'No emails found with that Message-ID'
         else:
-            return None
-    else:
-        return None
+            return None, 'Search for Message-ID failed'
+    finally:
+        mail.logout()
 
+# Route zum Abrufen der UID
 @app.route('/get-uid', methods=['POST'])
 def get_uid():
     data = request.get_json()
@@ -47,13 +57,16 @@ def get_uid():
     if not message_id:
         return jsonify({'error': 'Message-ID not provided'}), 400
 
-    uid = getemailuidbymessage_id(message_id)
+    uid, error = getemailuidbymessage_id(message_id)
 
+    if error:
+        return jsonify({'error': error}), 500
     if uid:
         return jsonify({'uid': uid}), 200
     else:
         return jsonify({'error': 'UID not found'}), 404
 
+# Route zum Verschieben der E-Mail
 @app.route('/move-email', methods=['POST'])
 def move_email():
     data = request.get_json()
@@ -62,22 +75,19 @@ def move_email():
     if not uid:
         return jsonify({'error': 'UID not provided'}), 400
 
-    # Verbindung zum IMAP-Server herstellen
-    mail = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
-    mail.login(IMAP_USER, IMAP_PASS)
-
-    # Postfach auswählen
-    mail.select('INBOX')
+    mail, error = connect_to_imap()
+    if error:
+        return jsonify({'error': error}), 500
 
     try:
-        # E-Mail in den Papierkorb verschieben (wenn der Server MOVE unterstützt)
-        result = mail.uid('MOVE', uid, 'Trash')  
+        mail.select('INBOX')
+        result = mail.uid('MOVE', uid, 'Trash')
         if result[0] == 'OK':
-            return jsonify({'message': 'Email moved to Trash successfully'}), 200
+            return jsonify({'message': 'Email moved to Trash successfully', 'uid': uid}), 200
         else:
-            return jsonify({'error': 'Failed to move email'}), 500
+            return jsonify({'error': 'Failed to move email', 'uid': uid}), 500
     except imaplib.IMAP4.error as e:
-        return jsonify({'error': f'MOVE command failed: {str(e)}'}), 500
+        return jsonify({'error': f'MOVE command failed: {str(e)}', 'uid': uid}), 500
     finally:
         mail.logout()
 
