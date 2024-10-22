@@ -91,5 +91,33 @@ def move_email():
     finally:
         mail.logout()
 
+# Route zum Markieren einer E-Mail als gelesen
+@app.route('/mark-as-read', methods=['POST'])
+def mark_as_read():
+    data = request.get_json()
+    uid = data.get('uid')
+
+    if not uid:
+        return jsonify({'error': 'UID not provided'}), 400
+
+    mail, error = connect_to_imap()
+    if error:
+        return jsonify({'error': error}), 500
+
+    try:
+        # Postfach auswählen
+        mail.select('INBOX')
+
+        # Das \Seen-Flag setzen, um die E-Mail als gelesen zu markieren
+        result = mail.uid('STORE', uid, '+FLAGS', '(\\Seen)')
+        if result[0] == 'OK':
+            return jsonify({'message': f'Email {uid} marked as read'}), 200
+        else:
+            return jsonify({'error': f'Failed to mark email {uid} as read'}), 500
+    except imaplib.IMAP4.error as e:
+        return jsonify({'error': f'Error marking email as read: {str(e)}'}), 500
+    finally:
+        mail.logout()
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=PORT)
