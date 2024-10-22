@@ -52,5 +52,32 @@ def get_uid():
     else:
         return jsonify({'error': 'UID not found'}), 404
 
+@app.route('/move-email', methods=['POST'])
+def move_email():
+    data = request.get_json()
+    uid = data.get('uid')
+
+    if not uid:
+        return jsonify({'error': 'UID not provided'}), 400
+
+    # Verbindung zum IMAP-Server herstellen
+    mail = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
+    mail.login(IMAP_USER, IMAP_PASS)
+
+    # Postfach auswählen
+    mail.select('INBOX')
+
+    try:
+        # E-Mail in den Papierkorb verschieben (wenn der Server MOVE unterstützt)
+        result = mail.uid('MOVE', uid, 'Trash')  
+        if result[0] == 'OK':
+            return jsonify({'message': 'Email moved to Trash successfully'}), 200
+        else:
+            return jsonify({'error': 'Failed to move email'}), 500
+    except imaplib.IMAP4.error as e:
+        return jsonify({'error': f'MOVE command failed: {str(e)}'}), 500
+    finally:
+        mail.logout()
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=PORT)
