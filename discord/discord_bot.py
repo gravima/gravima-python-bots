@@ -44,7 +44,8 @@ async def on_interaction(interaction):
             }
 
             # Sende die Daten per POST an den Webhook
-            response = requests.post(WEBHOOK_URL, json=payload)
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(WEBHOOK_URL, json=payload, headers=headers)
 
             if response.status_code == 200:
                 await interaction.response.send_message(f'Dein Befehl "{command}" für E-Mail-ID "{message_id}" wurde an n8n gesendet.')
