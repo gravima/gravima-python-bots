@@ -18,13 +18,13 @@ def connect_to_imap():
     try:
         mail = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
         mail.login(IMAP_USER, IMAP_PASS)
-        return mail
+        return mail, None  # Erfolgreich, also kein Fehler
     except imaplib.IMAP4.error as e:
         return None, f"IMAP connection failed: {str(e)}"
 
 # Funktion zur Suche der UID per Message-ID
 def getemailuidbymessage_id(message_id):
-    mail, error = connect_to_imap()
+    mail, error = connect_to_imap()  # Korrektes Entpacken
     if error:
         return None, error
 
@@ -75,7 +75,7 @@ def move_email():
     if not uid:
         return jsonify({'error': 'UID not provided'}), 400
 
-    mail, error = connect_to_imap()
+    mail, error = connect_to_imap()  # Korrektes Entpacken
     if error:
         return jsonify({'error': error}), 500
 
