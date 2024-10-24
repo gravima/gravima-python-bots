@@ -3,6 +3,7 @@ import discord
 import requests
 import re
 from discord.ext import commands
+from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import logging
 
@@ -14,6 +15,9 @@ load_dotenv()
 DISCORD_API_KEY = os.getenv('DISCORD_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID'))  # Sicherstellen, dass dies eine Ganzzahl ist
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+PORT = int(os.getenv('PORT', 5000))  # Standard Flask Port
+
+app = Flask(__name__)
 
 # Set up the bot with the appropriate intents
 intents = discord.Intents.default()
@@ -58,3 +62,6 @@ async def on_interaction(interaction):
 
 # Starte den Bot
 bot.run(DISCORD_API_KEY)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=PORT)
