@@ -3,10 +3,13 @@ services:
     build: discordbot
     container_name: discord-bot
     restart: unless-stopped
+    ports:
+      - 4200:${PORT}
     environment:
       - DISCORD_API_KEY=${DISCORD_API_KEY}
       - DISCORD_CHANNEL_ID=${DISCORD_CHANNEL_ID}
       - WEBHOOK_URL=${WEBHOOK_URL}
+      - PORT=${PORT}
 
   webservice:             
     build: webservice
