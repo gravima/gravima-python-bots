@@ -13,10 +13,10 @@ import logging
 load_dotenv()
 
 IMAP_HOST = os.getenv('IMAP_HOST')
-IMAP_PORT = int(os.getenv('IMAP_PORT', 993))  # Standard IMAP SSL Port
+IMAP_PORT = int(os.getenv('IMAP_PORT')) 
 IMAP_USER = os.getenv('IMAP_USER')
 IMAP_PASS = os.getenv('IMAP_PASS')
-PORT = int(os.getenv('PORT', 5000))  # Standard Flask Port
+PORT = int(os.getenv('PORT')) 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 app = Flask(__name__)
