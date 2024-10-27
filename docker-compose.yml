@@ -1,16 +1,4 @@
 services:
-  discord-bot:
-    build: discordbot
-    container_name: discord-bot
-    restart: unless-stopped
-    ports:
-      - 4210:${PORT}
-    environment:
-      - DISCORD_API_KEY=${DISCORD_API_KEY}
-      - DISCORD_CHANNEL_ID=${DISCORD_CHANNEL_ID}
-      - WEBHOOK_URL=${WEBHOOK_URL}
-      - PORT=${PORT}
-
   webservice:             
     build: webservice
     container_name: webservice
@@ -24,3 +12,15 @@ services:
       - IMAP_PASS=${IMAP_PASS}
       - PORT=${PORT}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+    discord-bot:
+      build: discordbot
+      container_name: discord-bot
+      restart: unless-stopped
+      ports:
+        - 4210:${PORT2}
+      environment:
+        - DISCORD_API_KEY=${DISCORD_API_KEY}
+        - DISCORD_CHANNEL_ID=${DISCORD_CHANNEL_ID}
+        - WEBHOOK_URL=${WEBHOOK_URL}
+        - PORT2=${PORT2}
