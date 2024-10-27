@@ -22,3 +22,5 @@ requests==2.32.3
 urllib3==2.2.3
 Werkzeug==3.0.4
 yarl==1.15.5
+openai==1.52.2
+beautifulsoup4==4.12.3

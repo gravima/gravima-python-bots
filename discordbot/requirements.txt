@@ -22,3 +22,4 @@ requests==2.32.3
 urllib3==2.2.3
 Werkzeug==3.0.4
 yarl==1.15.5
+quart==0.19.8
