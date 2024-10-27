@@ -70,7 +70,7 @@ async def on_interaction(interaction):
                 await collect_context_and_send_webhook(interaction, command, message_id, discord_message_id, user_name)
             else:
                 # For other actions, send the webhook immediately
-                await interaction.response.defer_update()
+                await interaction.response.defer(ephemeral=False)
                 await build_and_send_webhook(command, message_id, discord_message_id, user_name, context="")
         except Exception as e:
             logging.error(f'Error in on_interaction: {e}')
@@ -108,7 +108,7 @@ async def collect_context_and_send_webhook(interaction, command, message_id, dis
                         self.user_name,
                         context
                     )
-                    await modal_interaction.response.defer_update()
+                    await modal_interaction.response.defer(ephemeral=False)
                 except Exception as e:
                     logging.error(f'Error in modal on_submit: {e}')
                     await modal_interaction.response.send_message("An error occurred.", ephemeral=True)
