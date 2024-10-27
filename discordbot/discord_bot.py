@@ -29,7 +29,7 @@ load_dotenv()
 DISCORD_API_KEY = os.getenv('DISCORD_API_KEY')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID'))
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')
-PORT = int(os.getenv('PORT', 5000))
+PORT2 = int(os.getenv('PORT2', 4210))
 
 # Initialize Flask app
 app = Quart(__name__)
@@ -272,7 +272,7 @@ async def run_bot():
     await bot.start(DISCORD_API_KEY)
 
 async def run_app():
-    await app.run_task(host='0.0.0.0', port=PORT)
+    await app.run_task(host='0.0.0.0', port=PORT2)
 
 async def main():
     try:
