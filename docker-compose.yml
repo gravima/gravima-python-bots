@@ -1,6 +1,6 @@
 services:
   discord-bot:
-    build: discord
+    build: discordbot
     container_name: discord-bot
     restart: unless-stopped
     environment:
@@ -8,9 +8,9 @@ services:
       - DISCORD_CHANNEL_ID=${DISCORD_CHANNEL_ID}
       - WEBHOOK_URL=${WEBHOOK_URL}
 
-  flask:
-    build: flask
-    container_name: flask
+  webservice:             
+    build: webservice
+    container_name: webservice
     restart: unless-stopped
     ports:
       - 4200:${PORT}
